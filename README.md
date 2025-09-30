@@ -1,6 +1,6 @@
 # Realtime API Agents Demo
 
-This is a demonstration of more advanced patterns for voice agents, using the OpenAI Realtime API and the OpenAI Agents SDK. 
+This is a fork and demonstration of [OpenAI Realtime Agents Demo]("https://github.com/openai/openai-realtime-agents"), where we built apon the demonstrations to create multiple personality-types for a vending machine llm.  
 
 ## About the OpenAI Agents SDK
 
@@ -27,15 +27,15 @@ There are two main patterns demonstrated:
 - Open your browser to [http://localhost:3000](http://localhost:3000). It should default to the `chatSupervisor` Agent Config.
 - You can change examples via the "Scenario" dropdown in the top right.
 
-# Agentic Pattern 1: Chat-Supervisor
+# Agentic Pattern 1: Farida/V1
 
-This is demonstrated in the [chatSupervisor](src/app/agentConfigs/chatSupervisor/index.ts) Agent Config. The chat agent uses the realtime model to converse with the user and handle basic tasks, like greeting the user, casual conversation, and collecting information, and a more intelligent, text-based supervisor model (e.g. `gpt-4.1`) is used extensively to handle tool calls and more challenging responses. You can control the decision boundary by "opting in" specific tasks to the chat agent as desired.
+This is demonstrated in the [vendingManager](src/app/agentConfigs/vendingManager/index.ts) Agent Config. The chat agent uses the realtime model to converse with the user and handle basic tasks, like greeting the user, casual conversation, and collecting information, and a more intelligent, text-based supervisor model (e.g. `gpt-4.1`) is used extensively to handle tool calls and more challenging responses. You can control the decision boundary by "opting in" specific tasks to the chat agent as desired.
 
 Video walkthrough: [https://x.com/noahmacca/status/1927014156152058075](https://x.com/noahmacca/status/1927014156152058075)
 
 ## Example
-![Screenshot of the Chat Supervisor Flow](/public/screenshot_chat_supervisor.png)
-*In this exchange, note the immediate response to collect the phone number, and the deferral to the supervisor agent to handle the tool call and formulate the response. There ~2s between the end of "give me a moment to check on that." being spoken aloud and the start of the "Thanks for waiting. Your last bill...".*
+![Screenshot of the Chat Supervisor Flow](/public/screenshot_farida.png)
+*In this exchange, note the immediate call to get_inventory, and the opening line before the user even has to speak. There <1s between the call of get_inventory, and the llm being able to actually use the information with a customer*
 
 ## Schematic
 ```mermaid
