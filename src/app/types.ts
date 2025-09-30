@@ -1,5 +1,7 @@
-import { z } from "zod";
+import * as z from "zod"; // this apparently fixed the import error. or:
 
+// [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: 
+// no such file or directory, stat '/Users/najibabounasr/Desktop/Python/openai-realtime-agents/.next/cache/webpack/client-development/0.pack.gz'
 // Define the allowed moderation categories only once
 export const MODERATION_CATEGORIES = [
   "OFFENSIVE",

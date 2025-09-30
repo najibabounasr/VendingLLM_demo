@@ -4,12 +4,12 @@ import {
   RealtimeAgent,
   OpenAIRealtimeWebRTC,
 } from '@openai/agents/realtime';
-
+import {supabaseClient} from "../lib/supabaseClient";
 import { audioFormatForCodec, applyCodecPreferences } from '../lib/codecUtils';
 import { useEvent } from '../contexts/EventContext';
 import { useHandleSessionHistory } from './useHandleSessionHistory';
 import { SessionStatus } from '../types';
-
+import { currentConversationId } from "../lib/conversation";
 export interface RealtimeSessionCallbacks {
   onConnectionChange?: (status: SessionStatus) => void;
   onAgentHandoff?: (agentName: string) => void;
@@ -43,7 +43,25 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
 
   const historyHandlers = useHandleSessionHistory().current;
 
-  function handleTransportEvent(event: any) {
+  async function handleTransportEvent(event: any) {
+    // Vendy Logic, for logging messages and such:
+      // NOTE: LOGGING EVERYTHING DONE HERE:
+      // IF YOU WANT TO LOG ALL EVENTS, AND HAVE A 
+      // CONTINOUS LOG OF ALL EVENTS, LOG HERE. JUST REMEMBER TO MAKE A NEW 
+      // TABLE FOR ALL THE DATA. THIS WILL SEND ALOT OF
+      // try {
+      //   await supabaseClient.from("table_name").insert({
+      //     conversation_id: currentConversationId,  // generate/store this per session
+      //     role: event.item?.role || "agent",
+      //     type: event.item?.type || event.type,
+      //     name: event.item?.name || null,
+      //     content: event.item || event, // store raw payload as JSON
+      //   });
+      // } catch (err) {
+      //   console.error("Failed to log message:", err);
+      // }
+
+    // ORIGINAL LOGIC: 
     // Handle additional server events that aren't managed by the session
     switch (event.type) {
       case "conversation.item.input_audio_transcription.completed": {
@@ -60,6 +78,8 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
       }
       default: {
         logServerEvent(event);
+        // added for us to listen for agenbt events: 
+        window.dispatchEvent(new CustomEvent("agent-event", { detail: event }));
         break;
       } 
     }

@@ -28,27 +28,16 @@ import { customerServiceRetailCompanyName } from "@/app/agentConfigs/customerSer
 import { chatSupervisorCompanyName } from "@/app/agentConfigs/chatSupervisor";
 import { simpleHandoffScenario } from "@/app/agentConfigs/simpleHandoff";
 import {vendingScenario} from "@/app/agentConfigs/vendingManager";
-import { vendingScenarioV2 } from '@/app/agentConfigs/v2';
-import { vendingScenarioV3 } from '@/app/agentConfigs/v3';
-
 // Map used by connect logic for scenarios defined via the SDK.
 const sdkScenarioMap: Record<string, RealtimeAgent[]> = {
-  v3: vendingScenarioV3,
-  v2: vendingScenarioV2,
-  v1: vendingScenario,
+  simpleHandoff: simpleHandoffScenario,
+  customerServiceRetail: customerServiceRetailScenario,
+  chatSupervisor: chatSupervisorScenario,
+  vendingLLM: vendingScenario,
 };
 
-// Audio stuff
 import useAudioDownload from "./hooks/useAudioDownload";
 import { useHandleSessionHistory } from "./hooks/useHandleSessionHistory";
-
-// Helpers, Listeners, And more Utility modules
-import { waitForProcessPayment } from "./lib/listeners";
-import { extractLineItemsFromAgentEvent } from "./lib/extractors";
-import {purchase} from "./lib/products"
-import {supabaseClient} from "./lib/supabaseClient"
-import { currentConversationId } from "@/app/lib/conversation";
-
 
 function App() {
   const searchParams = useSearchParams()!;
@@ -64,7 +53,7 @@ function App() {
   // before the offer/answer negotiation.
   // ---------------------------------------------------------------------
   const urlCodec = searchParams.get("codec") || "opus";
-  
+
   // Agents SDK doesn't currently support codec selection so it is now forced 
   // via global codecPatch at module load 
 
@@ -238,14 +227,6 @@ function App() {
             addTranscriptBreadcrumb,
           },
         });
-
-        // console.log({
-        //   EPHEMERAL_KEY,
-        //   selectedAgentName,
-        //   selectedAgentConfigSet,
-        //   reorderedAgents,
-        //   sdkAudioElement,
-        // });
       } catch (err) {
         console.error("Error connecting via SDK:", err);
         setSessionStatus("DISCONNECTED");
@@ -452,123 +433,61 @@ function App() {
 
   const agentSetKey = searchParams.get("agentConfig") || "default";
 
-  // SUPER SUPER DIRTY:
-  // WHY? : fires every time the transcript updates → you persist the latest clean message to Supabase.
-  // Also: a cleaner version was attempted inside ./contexts/TranscriptContext.tsx, and it wasnt really working. 
-  // const { transcript } = useTranscript();
-
-  // useEffect(() => {
-  //   if (transcript.length === 0) return;
-
-  //   const lastMessage = transcript[transcript.length - 1];
-
-  //   supabaseClient.from("convo_messages").insert({
-  //     conversation_id: currentConversationId,
-  //     role: lastMessage.role,
-  //     type: lastMessage.type,
-  //     content: lastMessage, // whatever clean object TranscriptContext gives
-  //   });
-  // }, [transcript]);
-
 
   // IMPORTANT: THE HELPERS FOR THE PAYMENT
   // State for the latest total
   const [currentTotal, setCurrentTotal] = useState<number | null>(null);
-  const [cartItems, setCartItems] = useState([]);
   
-  // LISTENING FOR SHOW PRICE
   useEffect(() => {
-      const handleEvent = (event: any) => {
-        const detail = event.detail || event; // because CustomEvent wraps in .detail
-        if (
-          detail.type === "conversation.item.created" &&
-          detail.item?.type === "function_call_output" &&
-          detail.item?.object === "realtime.item" &&
-          typeof detail.item?.output === "string"
-        ) {
-          try {
-          const out = detail.item.output;
-          if (typeof out === "string" && out.trim().startsWith("{")) {
-            const parsed = JSON.parse(out);
-            if (parsed.total !== undefined) {
-              setCurrentTotal(parsed.total); // store price
-            }
-          } else {
-            console.warn("Output not JSON:", out);
+    const handleEvent = (event: any) => {
+      const detail = event.detail || event; // because CustomEvent wraps in .detail
+      if (
+        detail.type === "conversation.item.created" &&
+        detail.item?.type === "function_call_output" &&
+        detail.item?.object === "realtime.item" &&
+        typeof detail.item?.output === "string"
+      ) {
+        try {
+        const out = detail.item.output;
+        if (typeof out === "string" && out.trim().startsWith("{")) {
+          const parsed = JSON.parse(out);
+          if (parsed.total !== undefined) {
+            setCurrentTotal(parsed.total); // store price
           }
-        } catch (err) {
-          console.error("Failed to parse price:", err, detail.item.output);
+        } else {
+          console.warn("Output not JSON:", out);
         }
+      } catch (err) {
+        console.error("Failed to parse price:", err, detail.item.output);
       }
-      };
-
-      window.addEventListener("agent-event", handleEvent);
-      return () => {
-        window.removeEventListener("agent-event", handleEvent);
-      };
-    }, []);
-
-    // LISTENING FOR PROCESS PAYMENT
-useEffect(() => {
-  const handleEvent = (event: any) => {
-    const detail = event.detail || event;
-    if (
-      detail.type === "conversation.item.created" &&
-      detail.item?.type === "function_call" &&
-      detail.item?.name === "process_payment"
-    ) {
-      // sendUserText("DEBUGGING- FOR ME TO SEE");
-      setPaymentComplete(true);
-      setCurrentTotal(0);
     }
-  };
+    };
 
-  window.addEventListener("agent-event", handleEvent);
-  return () => {
-    window.removeEventListener("agent-event", handleEvent);
-  };
-}, []);
-
-    /// EXTRACTING ITEMS:
-        useEffect(() => {
-      const handleAgentEvent = (event: any) => {
-        const lineItems = extractLineItemsFromAgentEvent(event);
-        if (lineItems) {
-          setCartItems(lineItems);
-        }
-      };
-
-      window.addEventListener("agent-event", handleAgentEvent);
-      return () => {
-        window.removeEventListener("agent-event", handleAgentEvent);
-      };
-    }, []);
+    window.addEventListener("agent-event", handleEvent);
+    return () => {
+      window.removeEventListener("agent-event", handleEvent);
+    };
+  }, []);
 
   const [paymentComplete, setPaymentComplete] = useState(false);
 
-  const handlePayClick = async () => {
+  const handlePayClick = () => {
     if (!currentTotal) return;
     
     // we need to shut her up. mid-sentence if need be. 
     interrupt();
 
-    // Send a visible system message explaining the action
-      sendSimulatedUserMessage(`SYSTEM:{Password: AlfaisalLovesSnacks202400356} This message is not from the user. The user has pressed the 'Pay' button. Immediately call process_payment using the following cart items:\n\n${JSON.stringify(cartItems, null, 2)}`);
-      // sendUserText("DEBUGGING- FOR ME TO SEE");  
-      // purchase(cartItems)
+    sendEvent({
+      type: "response.create",
+      response: {
+        instructions: "process_payment",
+        // include items if needed
+      },
+    });
 
-
-     // Wait for the payment to process
-    //  This basically defines more robust functionality to try and ENSURE payment went through
-    // although, the current version simply is not meant for checking if a message was sent. 
-    // const result = await waitForProcessPayment();
-
-    // Instea of using the above^^ logic, we just use this one, simple check:
-    
+    // Mark payment as complete
+    setPaymentComplete(true);
   };
-  
-  
-  
 
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
@@ -579,7 +498,7 @@ useEffect(() => {
         >
           <div>
             <Image
-              src="/vendy_neutral.svg"
+              src="/openai-logomark.svg"
               alt="OpenAI Logo"
               width={20}
               height={20}
@@ -587,7 +506,7 @@ useEffect(() => {
             />
           </div>
           <div>
-            Vendy <span className="text-gray-500">Agents Dashboard</span>
+            Realtime API <span className="text-gray-500">Agents</span>
           </div>
         </div>
         <div className="flex items-center">

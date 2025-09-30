@@ -1,4 +1,6 @@
 "use client";
+import { supabaseClient } from "@/app/lib/supabaseClient";
+import { currentConversationId } from "@/app/lib/conversation"; 
 
 import React, {
   createContext,
@@ -41,6 +43,7 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
     return `${time}.${ms}`;
   }
 
+
   const addTranscriptMessage: TranscriptContextValue["addTranscriptMessage"] = (itemId, role, text = "", isHidden = false) => {
     setTranscriptItems((prev) => {
       if (prev.some((log) => log.itemId === itemId && log.type === "MESSAGE")) {
@@ -59,6 +62,45 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
         status: "IN_PROGRESS",
         isHidden,
       };
+      
+      // CRUCIAL: LOGGING LOGIC:
+      // THE FOLLOWING LOGIC WILL AUTOMATICALLY LOG EVERY MESSAGE TRANSCRIPT INTO 
+      // SUPABASE. THIS WILL ALLOW US TO HAVE FULL. 
+      // console.log("THE CONVO MESSAGE SHIT WAs REACHED");
+      // try {
+      //   supabaseClient.from("convo_messages").insert({
+      //     conversation_id: currentConversationId,
+      //     role: "agent",
+      //     type: "message",
+      //     name: "null",
+      //     content: newItem,
+      //   });
+      // } catch (err) {
+      //   console.error("Failed to log transcript message:", err);
+      // }
+
+(async () => {
+    if (newItem.title === "" || newItem.title === "[Transcribing...]"|| newItem.title == "hi" ) {
+    return; // nothing logged
+  }
+
+  const { data, error } = await supabaseClient
+    .from("convo_messages")
+    .insert({
+      conversation_id: currentConversationId,
+      role,
+      type: "message",
+      name: null,
+      content: newItem.title,
+    })
+    .select();
+
+  if (error) {
+    console.error("❌ Failed to insert convo_message:", error);
+  } else {
+    console.log("✅ Inserted convo_message:", data);
+  }
+})();
 
       return [...prev, newItem];
     });

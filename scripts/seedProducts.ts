@@ -1,0 +1,22 @@
+/// !!! NOTE: THIS SCRIPT IS ONLY FOR INITIALIZATION OF THE DATABASE:
+
+// import { supabase } from "../src/app/lib/products.ts";
+
+// async function seed() {
+//   const { error } = await supabase.from("products").insert([
+//     { id: "P-001", name: "Coca-Cola Can", price: 4, stock: 25 },
+//     { id: "P-002", name: "Pepsi Can", price: 4, stock: 18 },
+//     { id: "P-003", name: "KitKat Bar", price: 3, stock: 30 },
+//     { id: "P-004", name: "Lays Chips (Salted)", price: 5, stock: 12 },
+//     { id: "P-005", name: "Red Bull Energy Drink", price: 9, stock: 10 },
+//     { id: "P-006", name: "Snickers Bar", price: 3, stock: 27 },
+//     { id: "P-007", name: "Water Bottle (500ml)", price: 2, stock: 30 },
+//     { id: "P-008", name: "Takis Chips", price: 6, stock: 14 },
+//     { id: "P-009", name: "Sprite Can", price: 4, stock: 22 },
+//     { id: "P-010", name: "Mars Bar", price: 3, stock: 15 }
+//   ]);
+//   if (error) console.error(error);
+//   else console.log("Products inserted");
+// }
+
+// seed();
