@@ -1,6 +1,6 @@
 # Realtime API Agents Demo
 
-This is a fork and demonstration of [OpenAI Realtime Agents Demo]("https://github.com/openai/openai-realtime-agents"), where we built apon the demonstrations to create multiple personality-types for a vending machine llm.  
+This is a fork and demonstration of [OpenAI Realtime Agents Demo](https://github.com/openai/openai-realtime-agents), where we built apon the demonstrations to create multiple personality-types for a vending machine llm.  
 
 ## About the OpenAI Agents SDK
 
@@ -15,9 +15,10 @@ For full documentation, guides, and API references, see the official [OpenAI Age
 
 **NOTE:** For a version that does not use the OpenAI Agents SDK, see the [branch without-agents-sdk](https://github.com/openai/openai-realtime-agents/tree/without-agents-sdk).
 
-There are two main patterns demonstrated:
-1. **Chat-Supervisor:** A realtime-based chat agent interacts with the user and handles basic tasks, while a more intelligent, text-based supervisor model (e.g., `gpt-4.1`) is used extensively for tool calls and more complex responses. This approach provides an easy onramp and high-quality answers, with a small increase in latency.
-2. **Sequential Handoff:** Specialized agents (powered by realtime api) transfer the user between them to handle specific user intents. This is great for customer service, where user intents can be handled sequentially by specialist models that excel in a specific domains. This helps avoid the model having all instructions and tools in a single agent, which can degrade performance.
+There are three main personalities demonstrated:
+1. **Farida/v1:** A realtime-based chat agent interacts with the user and handles basic tasks, with a neutral personality, that balances charisma with professionalism. The base personality.
+2. **Kareem/v2:** A more childklike, joking llm with a personality meant to mesh well with children, aiming to be more playful and informal.
+3. **Bean/v3** Meant to maximalluy focus on grabbing attention, provoking customers and acting as a novelty feature. To demonstrate the llm's potential at grabbing customer attention, and maintaining their attention. 
 
 ## Setup
 
@@ -66,8 +67,7 @@ sequenceDiagram
 - **Simple ramp to a full realtime agent**: Rather than switching your whole agent to the realtime api, you can move one task at a time, taking time to validate and build trust for each before deploying to production.
 - **High intelligence**: You benefit from the high intelligence, excellent tool calling and instruction following of models like `gpt-4.1` in your voice agents.
 - **Lower cost**: If your chat agent is only being used for basic tasks, you can use the realtime-mini model, which, even when combined with GPT-4.1, should be cheaper than using the full 4o-realtime model.
-- **User experience**: It's a more natural conversational experience than using a stitched model architecture, where response latency is often 1.5s or longer after a user has finished speaking. In this architecture, the model responds to the user right away, even if it has to lean on the supervisor agent.
-  - However, more assistant responses will start with "Let me think", rather than responding immediately with the full response.
+- **User experience**: It's a more natural conversational experience than using a stitched model architecture, where response latency is often 1.5s or longer after a user has finished speaking. In this architecture, the model responds to the user right away.
 
 ## Modifying for your own agent
 1. Update [supervisorAgent](src/app/agentConfigs/chatSupervisorDemo/supervisorAgent.ts).
