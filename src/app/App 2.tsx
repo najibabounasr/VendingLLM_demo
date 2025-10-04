@@ -9,7 +9,6 @@ import Image from "next/image";
 import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
-import VendyUserView from "./components/VendyUserView";
 
 // Types
 import { SessionStatus } from "@/app/types";
@@ -53,13 +52,6 @@ import { currentConversationId } from "@/app/lib/conversation";
 
 function App() {
   const searchParams = useSearchParams()!;
-
-  // ---------------------------------------------------------------------
-  // UI Mode - Toggle between dev mode (with logs/transcripts) and user mode (clean UI)
-  // Usage: ?mode=user or ?mode=dev (defaults to dev)
-  // ---------------------------------------------------------------------
-  const uiMode = searchParams.get("mode") || "dev";
-  const isUserMode = uiMode === "user";
 
   // ---------------------------------------------------------------------
   // Codec selector – lets you toggle between wide-band Opus (48 kHz)
@@ -578,24 +570,6 @@ useEffect(() => {
   
   
 
-  // If in user mode, render the simplified Vendy UI
-  if (isUserMode) {
-    return (
-      <VendyUserView
-        currentTotal={currentTotal}
-        paymentComplete={paymentComplete}
-        onPayClick={handlePayClick}
-        sessionStatus={sessionStatus}
-        isPTTActive={isPTTActive}
-        setIsPTTActive={setIsPTTActive}
-        isPTTUserSpeaking={isPTTUserSpeaking}
-        handleTalkButtonDown={handleTalkButtonDown}
-        handleTalkButtonUp={handleTalkButtonUp}
-      />
-    );
-  }
-
-  // Otherwise, render the full dev/dashboard UI
   return (
     <div className="text-base flex flex-col h-screen bg-gray-100 text-gray-800 relative">
       <div className="p-5 text-lg font-semibold flex justify-between items-center">
@@ -714,7 +688,7 @@ useEffect(() => {
           {paymentComplete ? "Payment Complete!" : "Pay"}
         </button>
       </div>
-
+      
 
       <BottomToolbar
         sessionStatus={sessionStatus}

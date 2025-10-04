@@ -61,27 +61,30 @@ export function useRealtimeSession(callbacks: RealtimeSessionCallbacks = {}) {
       //   console.error("Failed to log message:", err);
       // }
 
-    // ORIGINAL LOGIC: 
+    // ORIGINAL LOGIC:
     // Handle additional server events that aren't managed by the session
     switch (event.type) {
       case "conversation.item.input_audio_transcription.completed": {
         historyHandlers.handleTranscriptionCompleted(event);
+        window.dispatchEvent(new CustomEvent("agent-event", { detail: event }));
         break;
       }
       case "response.audio_transcript.done": {
         historyHandlers.handleTranscriptionCompleted(event);
+        window.dispatchEvent(new CustomEvent("agent-event", { detail: event }));
         break;
       }
       case "response.audio_transcript.delta": {
         historyHandlers.handleTranscriptionDelta(event);
+        window.dispatchEvent(new CustomEvent("agent-event", { detail: event }));
         break;
       }
       default: {
         logServerEvent(event);
-        // added for us to listen for agenbt events: 
+        // added for us to listen for agenbt events:
         window.dispatchEvent(new CustomEvent("agent-event", { detail: event }));
         break;
-      } 
+      }
     }
   }
 
