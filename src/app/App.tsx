@@ -10,6 +10,7 @@ import Transcript from "./components/Transcript";
 import Events from "./components/Events";
 import BottomToolbar from "./components/BottomToolbar";
 import VendyUserView from "./components/VendyUserView";
+import VendyCartView from "./components/VendyCartView";
 
 // Types
 import { SessionStatus } from "@/app/types";
@@ -55,11 +56,13 @@ function App() {
   const searchParams = useSearchParams()!;
 
   // ---------------------------------------------------------------------
-  // UI Mode - Toggle between dev mode (with logs/transcripts) and user mode (clean UI)
-  // Usage: ?mode=user or ?mode=dev (defaults to dev)
+  // UI Mode - Toggle between dev mode and user modes
+  // Usage: ?mode=dev (default), ?mode=user1 (fullscreen), ?mode=user2 (cart view)
   // ---------------------------------------------------------------------
   const uiMode = searchParams.get("mode") || "dev";
-  const isUserMode = uiMode === "user";
+  const isDevMode = uiMode === "dev";
+  const isUserMode1 = uiMode === "user1";
+  const isUserMode2 = uiMode === "user2";
 
   // ---------------------------------------------------------------------
   // Codec selector – lets you toggle between wide-band Opus (48 kHz)
@@ -482,8 +485,8 @@ function App() {
   // IMPORTANT: THE HELPERS FOR THE PAYMENT
   // State for the latest total
   const [currentTotal, setCurrentTotal] = useState<number | null>(null);
-  const [cartItems, setCartItems] = useState([]);
-  
+  const [cartItems, setCartItems] = useState<any[]>([]);
+
   // LISTENING FOR SHOW PRICE
   useEffect(() => {
       const handleEvent = (event: any) => {
@@ -500,6 +503,12 @@ function App() {
             const parsed = JSON.parse(out);
             if (parsed.total !== undefined) {
               setCurrentTotal(parsed.total); // store price
+              setPaymentComplete(false); // reset payment state for new order
+
+              // Store cart items if available
+              if (parsed.line_items && Array.isArray(parsed.line_items)) {
+                setCartItems(parsed.line_items);
+              }
             }
           } else {
             console.warn("Output not JSON:", out);
@@ -578,11 +587,29 @@ useEffect(() => {
   
   
 
-  // If in user mode, render the simplified Vendy UI
-  if (isUserMode) {
+  // User Mode 1: Fullscreen Vendy UI
+  if (isUserMode1) {
     return (
       <VendyUserView
         currentTotal={currentTotal}
+        paymentComplete={paymentComplete}
+        onPayClick={handlePayClick}
+        sessionStatus={sessionStatus}
+        isPTTActive={isPTTActive}
+        setIsPTTActive={setIsPTTActive}
+        isPTTUserSpeaking={isPTTUserSpeaking}
+        handleTalkButtonDown={handleTalkButtonDown}
+        handleTalkButtonUp={handleTalkButtonUp}
+      />
+    );
+  }
+
+  // User Mode 2: Split view with cart
+  if (isUserMode2) {
+    return (
+      <VendyCartView
+        currentTotal={currentTotal}
+        cartItems={cartItems}
         paymentComplete={paymentComplete}
         onPayClick={handlePayClick}
         sessionStatus={sessionStatus}

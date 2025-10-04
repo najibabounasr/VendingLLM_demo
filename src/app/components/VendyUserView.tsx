@@ -54,11 +54,8 @@ function VendyUserView({
         return;
       }
 
-      // Check if agent finished speaking
-      if (
-        detail.type === "response.audio.done" ||
-        detail.type === "response.done"
-      ) {
+      // Check if agent finished speaking - only listen to audio.done
+      if (detail.type === "response.audio.done") {
         // Only return to neutral if payment isn't complete
         if (!paymentComplete) {
           setVendyState("neutral");
@@ -127,7 +124,7 @@ function VendyUserView({
               </div>
 
               {/* QR Code Placeholder */}
-              {currentTotal && currentTotal > 0 && !paymentComplete && (
+              {currentTotal > 0 && !paymentComplete && (
                 <div className="bg-white p-4 rounded-lg">
                   <div className="w-32 h-32 mx-auto bg-gray-200 flex items-center justify-center text-gray-500 text-xs text-center">
                     QR Code
