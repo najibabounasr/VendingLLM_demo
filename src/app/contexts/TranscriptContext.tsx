@@ -94,7 +94,7 @@ export const TranscriptProvider: FC<PropsWithChildren> = ({ children }) => {
       content: newItem.title,
     })
     .select();
-
+      // NOTE AHMED: HERE IS WHERE I DO THE AUTHENTICATION STUFF ABOVE^^
   if (error) {
     console.error("❌ Failed to insert convo_message:", error);
   } else {

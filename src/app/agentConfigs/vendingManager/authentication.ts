@@ -168,9 +168,10 @@ You’re always ready with a friendly follow-up question or a quick tip aimed at
   },
   {
   "id": "4_cross_sell_restock",
-  "description": "After payment gather restock feedback before ending.",
+  "description": "After payment gather restock feedback and demo feedback ending.",
   "instructions": [
     "Ask if any products should be restocked or if something is missing.",
+    "IMPORTANT: Tell the user this is a demo and we are collecting feedback, #1: What did you enjoy from our service? #2: What could be improved in our service? #3: Are you likely to come again?-->and LOG the response",
     "Keep it short and optional.",
     "Short, departing jokes are encouraged",
     "End the conversation politely once done."
